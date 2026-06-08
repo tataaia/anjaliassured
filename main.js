@@ -1,5 +1,21 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Mobile Menu Toggle & Close on click
+    // 1. Phone Number Privacy Protection (Obfuscation)
+    // Base64 encoded phone number to prevent scrapers on GitHub from reading it.
+    // Default placeholder '910000000000' encoded is 'OTEwMDAwMDAwMDAw'
+    const encodedPhone = "OTEwMDAwMDAwMDAw"; 
+    const getDecodedPhone = () => atob(encodedPhone);
+
+    // Apply dynamic WhatsApp link securely to all WhatsApp buttons on load
+    const whatsappLinks = document.querySelectorAll('.whatsapp-dynamic-link');
+    whatsappLinks.forEach(link => {
+        const defaultText = encodeURIComponent("Hi Anjali Devi, I am interested in Tata AIA Life Insurance consultation.");
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.open(`https://wa.me/${getDecodedPhone()}?text=${defaultText}`, '_blank');
+        });
+    });
+
+    // 2. Mobile Menu Toggle & Close on click
     const hamburger = document.querySelector('.hamburger');
     const navLinks = document.querySelector('.nav-links');
 
@@ -42,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 2. Active Page Highlighting
+    // 3. Active Page Highlighting
     const currentPath = window.location.pathname;
     const navItems = document.querySelectorAll('.nav-links a');
     navItems.forEach(link => {
@@ -54,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 3. Blog Category Filter
+    // 4. Blog Category Filter
     const filterButtons = document.querySelectorAll('.filter-btn');
     const blogCards = document.querySelectorAll('.blog-card');
 
@@ -85,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 4. Secure Form Redirection to WhatsApp (Protects Email & Phone Privacy)
+    // 5. Secure Form Redirection to WhatsApp (Protects Email & Phone Privacy)
     const contactForm = document.getElementById('advisorContactForm');
     if (contactForm) {
         contactForm.addEventListener('submit', (e) => {
@@ -126,14 +142,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     </svg>
                     <h3 style="margin-bottom: 1rem; font-size: 1.75rem;">Request Submitted!</h3>
                     <p style="color: var(--text-muted); margin-bottom: 1.5rem;">We are opening WhatsApp to securely deliver your message to Anjali Devi. Click the button below if it doesn't open automatically.</p>
-                    <a href="https://wa.me/910000000000?text=${textMessage}" target="_blank" rel="noopener noreferrer" class="btn-cta" style="margin-bottom: 1rem;">Open WhatsApp Chat</a>
+                    <a href="https://wa.me/${getDecodedPhone()}?text=${textMessage}" target="_blank" rel="noopener noreferrer" class="btn-cta" style="margin-bottom: 1rem;">Open WhatsApp Chat</a>
                     <br>
                     <button id="resetFormBtn" class="btn-secondary" style="margin-top: 1rem;">Back to form</button>
                 </div>
             `;
 
             // Auto redirect to WhatsApp
-            window.open(`https://wa.me/910000000000?text=${textMessage}`, '_blank');
+            window.open(`https://wa.me/${getDecodedPhone()}?text=${textMessage}`, '_blank');
 
             document.getElementById('resetFormBtn').addEventListener('click', () => {
                 document.location.reload();
