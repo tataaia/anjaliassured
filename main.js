@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // FormSubmit Endpoint: Replace with your actual email or FormSubmit unique key.
             // When you submit this for the first time, FormSubmit will send a confirmation email to verify.
-            const targetEmail = "your-email-placeholder@domain.com"; 
+            const targetEmail = "officialwork1234509876@gmail.com"; 
             const submitEndpoint = `https://formsubmit.co/ajax/${targetEmail}`;
 
             // Show a loading/submitting state
