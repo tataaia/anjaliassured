@@ -1,24 +1,44 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Mobile Menu Toggle
+    // 1. Mobile Menu Toggle & Close on click
     const hamburger = document.querySelector('.hamburger');
     const navLinks = document.querySelector('.nav-links');
+
+    function closeMobileMenu() {
+        if (navLinks.classList.contains('active')) {
+            navLinks.classList.remove('active');
+            hamburger.classList.remove('active');
+            
+            const spans = hamburger.querySelectorAll('span');
+            spans[0].style.transform = 'none';
+            spans[1].style.opacity = '1';
+            spans[2].style.transform = 'none';
+        }
+    }
 
     if (hamburger && navLinks) {
         hamburger.addEventListener('click', () => {
             navLinks.classList.toggle('active');
             hamburger.classList.toggle('active');
             
-            // Hamburger animation
+            // Hamburger animation to create X mark
             const spans = hamburger.querySelectorAll('span');
             if (hamburger.classList.contains('active')) {
-                spans[0].style.transform = 'rotate(45deg) translate(6px, 6px)';
+                spans[0].style.transform = 'rotate(45deg) translate(5px, 5px)';
                 spans[1].style.opacity = '0';
-                spans[2].style.transform = 'rotate(-45deg) translate(6px, -6px)';
+                spans[2].style.transform = 'rotate(-45deg) translate(5px, -5px)';
             } else {
                 spans[0].style.transform = 'none';
                 spans[1].style.opacity = '1';
                 spans[2].style.transform = 'none';
             }
+        });
+
+        // Close mobile menu automatically when any link inside it is clicked
+        const menuLinks = navLinks.querySelectorAll('a');
+        menuLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                closeMobileMenu();
+            });
         });
     }
 
@@ -65,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 4. Simulated Contact Form Submission
+    // 4. Secure Form Redirection to WhatsApp (Protects Email & Phone Privacy)
     const contactForm = document.getElementById('advisorContactForm');
     if (contactForm) {
         contactForm.addEventListener('submit', (e) => {
@@ -77,30 +97,45 @@ document.addEventListener('DOMContentLoaded', () => {
             const plan = document.getElementById('plan').value;
             const message = document.getElementById('message').value;
 
-            // Simple validation
             if (!name || !phone) {
                 alert('Please fill out your Name and Phone number.');
                 return;
             }
 
-            // Create a custom success alert message
-            const formContainer = contactForm.parentElement;
-            const originalContent = formContainer.innerHTML;
+            // Map plan values to reader-friendly text
+            let planText = "General Consultation";
+            if (plan === "term-insurance") planText = "Pure Term Protection Plan";
+            else if (plan === "savings-wealth") planText = "Guaranteed Savings & Wealth";
+            else if (plan === "retirement-plan") planText = "Retirement & Pension Plan";
+            else if (plan === "child-future") planText = "Child Education Plan";
 
+            // Format message for WhatsApp
+            const textMessage = `Hello Anjali Devi, I have submitted a callback request on your website.%0A%0A` +
+                                `*Name:* ${encodeURIComponent(name)}%0A` +
+                                `*Phone:* ${encodeURIComponent(phone)}%0A` +
+                                `*Email:* ${encodeURIComponent(email || 'Not Provided')}%0A` +
+                                `*Interested Plan:* ${encodeURIComponent(planText)}%0A` +
+                                `*Message:* ${encodeURIComponent(message || 'None')}`;
+
+            // Success feedback state in UI
+            const formContainer = contactForm.parentElement;
             formContainer.innerHTML = `
                 <div style="text-align: center; padding: 2rem; color: var(--primary);">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 64px; height: 64px; color: var(--accent); margin: 0 auto 1.5rem;">
                         <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clip-rule="evenodd" />
                     </svg>
-                    <h3 style="margin-bottom: 1rem; font-size: 1.75rem;">Thank You, ${name}!</h3>
-                    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Your query has been submitted successfully. Anjali Devi will get back to you shortly at ${phone} or ${email}.</p>
-                    <button id="resetFormBtn" class="btn-cta">Submit Another Query</button>
+                    <h3 style="margin-bottom: 1rem; font-size: 1.75rem;">Request Submitted!</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">We are opening WhatsApp to securely deliver your message to Anjali Devi. Click the button below if it doesn't open automatically.</p>
+                    <a href="https://wa.me/910000000000?text=${textMessage}" target="_blank" rel="noopener noreferrer" class="btn-cta" style="margin-bottom: 1rem;">Open WhatsApp Chat</a>
+                    <br>
+                    <button id="resetFormBtn" class="btn-secondary" style="margin-top: 1rem;">Back to form</button>
                 </div>
             `;
 
+            // Auto redirect to WhatsApp
+            window.open(`https://wa.me/910000000000?text=${textMessage}`, '_blank');
+
             document.getElementById('resetFormBtn').addEventListener('click', () => {
-                formContainer.innerHTML = originalContent;
-                // Re-bind the submit listener
                 document.location.reload();
             });
         });
