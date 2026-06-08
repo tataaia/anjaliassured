@@ -981,13 +981,13 @@ footer {
 .fab-btn {
     width: 60px;
     height: 60px;
-    background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
-    box-shadow: 0 8px 25px rgba(37, 211, 102, 0.4);
+    box-shadow: 0 8px 25px rgba(255, 111, 0, 0.3);
     transition: var(--transition);
     border: none;
     cursor: pointer;
@@ -995,11 +995,51 @@ footer {
 
 .fab-btn:hover {
     transform: scale(1.1) rotate(5deg);
-    box-shadow: 0 10px 30px rgba(37, 211, 102, 0.6);
+    box-shadow: 0 10px 30px rgba(255, 111, 0, 0.5);
 }
 
 .fab-btn svg {
     width: 30px;
     height: 30px;
     fill: currentColor;
+}
+
+/* Success Checkmark Premium Animation */
+.success-checkmark {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 1.5rem;
+    display: block;
+}
+
+.checkmark-circle {
+    stroke-dasharray: 166;
+    stroke-dashoffset: 166;
+    stroke-width: 2;
+    stroke-miterlimit: 10;
+    stroke: #4caf50;
+    fill: none;
+    animation: stroke-circle 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+}
+
+.checkmark-check {
+    transform-origin: 50% 50%;
+    stroke-dasharray: 48;
+    stroke-dashoffset: 48;
+    stroke-width: 3;
+    stroke: #4caf50;
+    fill: none;
+    animation: stroke-check 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.6s forwards;
+}
+
+@keyframes stroke-circle {
+    100% {
+        stroke-dashoffset: 0;
+    }
+}
+
+@keyframes stroke-check {
+    100% {
+        stroke-dashoffset: 0;
+    }
 }

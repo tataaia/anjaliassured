@@ -1,21 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Phone Number Privacy Protection (Obfuscation)
-    // Base64 encoded phone number to prevent scrapers on GitHub from reading it.
-    // Default placeholder '910000000000' encoded is 'OTEwMDAwMDAwMDAw'
-    const encodedPhone = "OTEwMDAwMDAwMDAw"; 
-    const getDecodedPhone = () => atob(encodedPhone);
-
-    // Apply dynamic WhatsApp link securely to all WhatsApp buttons on load
-    const whatsappLinks = document.querySelectorAll('.whatsapp-dynamic-link');
-    whatsappLinks.forEach(link => {
-        const defaultText = encodeURIComponent("Hi Anjali Devi, I am interested in Tata AIA Life Insurance consultation.");
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            window.open(`https://wa.me/${getDecodedPhone()}?text=${defaultText}`, '_blank');
-        });
-    });
-
-    // 2. Mobile Menu Toggle & Close on click
+    // 1. Mobile Menu Toggle & Close on click
     const hamburger = document.querySelector('.hamburger');
     const navLinks = document.querySelector('.nav-links');
 
@@ -58,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 3. Active Page Highlighting
+    // 2. Active Page Highlighting
     const currentPath = window.location.pathname;
     const navItems = document.querySelectorAll('.nav-links a');
     navItems.forEach(link => {
@@ -70,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 4. Blog Category Filter
+    // 3. Blog Category Filter
     const filterButtons = document.querySelectorAll('.filter-btn');
     const blogCards = document.querySelectorAll('.blog-card');
 
@@ -101,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 5. Secure Form Redirection to WhatsApp (Protects Email & Phone Privacy)
+    // 4. Secure AJAX Form Submission to FormSubmit.co (Protects Email & Phone Privacy)
     const contactForm = document.getElementById('advisorContactForm');
     if (contactForm) {
         contactForm.addEventListener('submit', (e) => {
@@ -125,34 +109,59 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (plan === "retirement-plan") planText = "Retirement & Pension Plan";
             else if (plan === "child-future") planText = "Child Education Plan";
 
-            // Format message for WhatsApp
-            const textMessage = `Hello Anjali Devi, I have submitted a callback request on your website.%0A%0A` +
-                                `*Name:* ${encodeURIComponent(name)}%0A` +
-                                `*Phone:* ${encodeURIComponent(phone)}%0A` +
-                                `*Email:* ${encodeURIComponent(email || 'Not Provided')}%0A` +
-                                `*Interested Plan:* ${encodeURIComponent(planText)}%0A` +
-                                `*Message:* ${encodeURIComponent(message || 'None')}`;
+            // FormSubmit Endpoint: Replace with your actual email or FormSubmit unique key.
+            // When you submit this for the first time, FormSubmit will send a confirmation email to verify.
+            const targetEmail = "your-email-placeholder@domain.com"; 
+            const submitEndpoint = `https://formsubmit.co/ajax/${targetEmail}`;
 
-            // Success feedback state in UI
-            const formContainer = contactForm.parentElement;
-            formContainer.innerHTML = `
-                <div style="text-align: center; padding: 2rem; color: var(--primary);">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 64px; height: 64px; color: var(--accent); margin: 0 auto 1.5rem;">
-                        <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clip-rule="evenodd" />
-                    </svg>
-                    <h3 style="margin-bottom: 1rem; font-size: 1.75rem;">Request Submitted!</h3>
-                    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">We are opening WhatsApp to securely deliver your message to Anjali Devi. Click the button below if it doesn't open automatically.</p>
-                    <a href="https://wa.me/${getDecodedPhone()}?text=${textMessage}" target="_blank" rel="noopener noreferrer" class="btn-cta" style="margin-bottom: 1rem;">Open WhatsApp Chat</a>
-                    <br>
-                    <button id="resetFormBtn" class="btn-secondary" style="margin-top: 1rem;">Back to form</button>
-                </div>
-            `;
+            // Show a loading/submitting state
+            const submitBtn = contactForm.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Submitting Request...";
 
-            // Auto redirect to WhatsApp
-            window.open(`https://wa.me/${getDecodedPhone()}?text=${textMessage}`, '_blank');
+            // Send form data asynchronously in the background
+            fetch(submitEndpoint, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify({
+                    _subject: `New Lead: Callback Request from ${name}`,
+                    Name: name,
+                    Phone: phone,
+                    Email: email || "Not Provided",
+                    "Interested Plan": planText,
+                    Message: message || "None"
+                })
+            })
+            .then(response => {
+                // Display premium green tick checkmark success state
+                const formContainer = contactForm.parentElement;
+                formContainer.innerHTML = `
+                    <div style="text-align: center; padding: 3rem 1.5rem; color: var(--primary);">
+                        <svg class="success-checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                            <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+                            <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                        </svg>
+                        <h3 style="margin-bottom: 1rem; font-size: 1.75rem;">Request Submitted!</h3>
+                        <p style="color: var(--text-muted); margin-bottom: 2rem; max-width: 450px; margin-left: auto; margin-right: auto;">
+                            Your callback request has been sent successfully. Anjali Devi will review your details and contact you shortly.
+                        </p>
+                        <button id="resetFormBtn" class="btn-secondary">Submit Another Request</button>
+                    </div>
+                `;
 
-            document.getElementById('resetFormBtn').addEventListener('click', () => {
-                document.location.reload();
+                document.getElementById('resetFormBtn').addEventListener('click', () => {
+                    document.location.reload();
+                });
+            })
+            .catch(error => {
+                console.error("Submission failed:", error);
+                alert("Something went wrong. Please check your internet connection and try again.");
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalBtnText;
             });
         });
     }
