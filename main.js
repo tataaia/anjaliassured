@@ -164,4 +164,35 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
+
+    // 5. Floating Action Button Scroll Visibility Behavior
+    const floatingCta = document.querySelector('.floating-cta');
+    if (floatingCta) {
+        const checkScroll = () => {
+            // Check if we are on contact page and the contact form/wrapper is visible
+            const contactSection = document.getElementById('contact') || document.getElementById('advisorContactForm');
+            if (contactSection) {
+                const rect = contactSection.getBoundingClientRect();
+                // Hide if contact section is visible in the viewport
+                if (rect.top < window.innerHeight - 100) {
+                    floatingCta.classList.add('hidden');
+                    return;
+                }
+            }
+
+            // Also hide if close to the footer at the bottom of the page
+            const documentHeight = document.documentElement.scrollHeight;
+            const scrollPosition = window.innerHeight + window.scrollY;
+            if (documentHeight - scrollPosition < 300) {
+                floatingCta.classList.add('hidden');
+            } else {
+                floatingCta.classList.remove('hidden');
+            }
+        };
+
+        window.addEventListener('scroll', checkScroll, { passive: true });
+        window.addEventListener('resize', checkScroll);
+        // Run once initially
+        checkScroll();
+    }
 });

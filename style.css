@@ -970,6 +970,14 @@ footer {
     right: 24px;
     z-index: 999;
     display: none;
+    transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
+}
+
+.floating-cta.hidden {
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+    visibility: hidden;
 }
 
 @media (max-width: 768px) {
@@ -994,7 +1002,7 @@ footer {
 }
 
 .fab-btn:hover {
-    transform: scale(1.1) rotate(5deg);
+    transform: scale(1.08);
     box-shadow: 0 10px 30px rgba(255, 111, 0, 0.5);
 }
 
