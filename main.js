@@ -147,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </svg>
                         <h3 style="margin-bottom: 1rem; font-size: 1.75rem;">Request Submitted!</h3>
                         <p style="color: var(--text-muted); margin-bottom: 2rem; max-width: 450px; margin-left: auto; margin-right: auto;">
-                            Your callback request has been sent successfully. Anjali Devi will review your details and contact you shortly.
+                            Your callback request has been sent successfully. We will review your application and contact you shortly.
                         </p>
                         <button id="resetFormBtn" class="btn-secondary">Submit Another Request</button>
                     </div>
