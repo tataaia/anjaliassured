@@ -109,10 +109,9 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (plan === "retirement-plan") planText = "Retirement & Pension Plan";
             else if (plan === "child-future") planText = "Child Education Plan";
 
-            // FormSubmit Endpoint: Replace with your actual email or FormSubmit unique key.
-            // When you submit this for the first time, FormSubmit will send a confirmation email to verify.
-            const targetEmail = "officialwork1234509876@gmail.com"; 
-            const submitEndpoint = `https://formsubmit.co/ajax/${targetEmail}`;
+            // FormSubmit Endpoint using the secure hash token provided by FormSubmit.co
+            const formToken = "9328fba602dcbadaadb6165b3b6a38a2"; 
+            const submitEndpoint = `https://formsubmit.co/ajax/${formToken}`;
 
             // Show a loading/submitting state
             const submitBtn = contactForm.querySelector('button[type="submit"]');
