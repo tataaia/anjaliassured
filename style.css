@@ -999,9 +999,9 @@ footer {
 }
 
 .fab-btn svg {
-    width: 30px;
-    height: 30px;
-    fill: currentColor;
+    width: 26px;
+    height: 26px;
+    fill: none;
 }
 
 /* Success Checkmark Premium Animation */
