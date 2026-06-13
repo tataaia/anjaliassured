@@ -3,8 +3,22 @@
 :root {
     --primary: #0a2540;
     --primary-light: #1e3d59;
-    --accent: #ff6f00;
-    --accent-hover: #e65c00;
+    --accent: #00a896; /* Default: Color 2 Teal */
+    --accent-hover: #028090;
+    
+    /* Premium Color Choices Configuration */
+    --color-teal: #00a896;       /* Choice 2: Teal */
+    --color-teal-hover: #028090;
+    
+    --color-crimson: #e11d48;    /* Choice 5: Crimson Rose */
+    --color-crimson-hover: #be123c;
+    
+    --color-turquoise: #06b6d4;  /* Choice 7: Ocean Turquoise */
+    --color-turquoise-hover: #0891b2;
+    
+    --color-coral: #f43f5e;      /* Choice 10: Coral Rose */
+    --color-coral-hover: #e11d48;
+    
     --text-dark: #2d3748;
     --text-light: #ffffff;
     --text-muted: #718096;
@@ -177,7 +191,7 @@ body {
     font-weight: 700;
     border: none;
     cursor: pointer;
-    box-shadow: 0 6px 20px rgba(255, 111, 0, 0.25);
+    box-shadow: 0 6px 20px rgba(10, 37, 64, 0.15);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -1040,8 +1054,7 @@ footer {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
-    box-shadow: 0 8px 25px rgba(255, 111, 0, 0.3);
+    box-shadow: 0 8px 25px rgba(10, 37, 64, 0.15);
     transition: var(--transition);
     border: none;
     cursor: pointer;
@@ -1049,7 +1062,7 @@ footer {
 
 .fab-btn:hover {
     transform: scale(1.08);
-    box-shadow: 0 10px 30px rgba(255, 111, 0, 0.5);
+    box-shadow: 0 10px 30px rgba(10, 37, 64, 0.25);
 }
 
 .fab-btn svg {
@@ -1096,4 +1109,25 @@ footer {
     100% {
         stroke-dashoffset: 0;
     }
+}
+
+/* Page-specific & Section-specific Accent Theme Overrides */
+.theme-teal {
+    --accent: var(--color-teal);
+    --accent-hover: var(--color-teal-hover);
+}
+
+.theme-crimson {
+    --accent: var(--color-crimson);
+    --accent-hover: var(--color-crimson-hover);
+}
+
+.theme-turquoise {
+    --accent: var(--color-turquoise);
+    --accent-hover: var(--color-turquoise-hover);
+}
+
+.theme-coral {
+    --accent: var(--color-coral);
+    --accent-hover: var(--color-coral-hover);
 }
