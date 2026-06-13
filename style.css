@@ -85,6 +85,52 @@ header {
     color: var(--accent);
 }
 
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.lang-switcher {
+    display: flex;
+    background: rgba(10, 37, 64, 0.05);
+    padding: 2px;
+    border-radius: 30px;
+    border: 1px solid rgba(10, 37, 64, 0.08);
+}
+
+.lang-btn {
+    border: none;
+    background: none;
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 0.8rem;
+    padding: 6px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    color: var(--primary);
+    transition: var(--transition);
+}
+
+.lang-btn:hover {
+    color: var(--accent);
+}
+
+.lang-btn.active {
+    background-color: var(--primary);
+    color: var(--text-light);
+}
+
+/* Hide Google Translate Banner and Widget elements */
+.skiptranslate, iframe.skiptranslate, #goog-gt-tt {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+body {
+    top: 0px !important;
+}
+
 .nav-links {
     display: flex;
     list-style: none;

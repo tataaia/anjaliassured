@@ -15,11 +15,17 @@
             <a href="index.html" class="logo">
                 Anjali<span>Assured</span>
             </a>
-            <button class="hamburger" aria-label="Menu">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
+            <div class="nav-right">
+                <div class="lang-switcher">
+                    <button class="lang-btn active" data-lang="en">EN</button>
+                    <button class="lang-btn" data-lang="hi">हिन्दी</button>
+                </div>
+                <button class="hamburger" aria-label="Menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
             <ul class="nav-links">
                 <li><a href="index.html">Home</a></li>
                 <li><a href="about.html">About Me</a></li>
@@ -149,7 +155,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2026 Anjali Assured. All Rights Reserved. Tata AIA Life Authorized Insurance Advisor.</p>
+            <p>&copy; <span class="notranslate">2026</span> Anjali Assured. All Rights Reserved. Tata AIA Life Authorized Insurance Advisor.</p>
         </div>
     </footer>
 
@@ -159,6 +165,20 @@
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="fill: none !important; stroke: currentColor !important;"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
         </a>
     </div>
+
+    <!-- Google Translate Widget (Hidden) -->
+    <div id="google_translate_element" style="display:none;"></div>
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'en',
+                includedLanguages: 'en,hi',
+                layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+                autoDisplay: false
+            }, 'google_translate_element');
+        }
+    </script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
     <script src="main.js"></script>
 </body>

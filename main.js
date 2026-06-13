@@ -1,4 +1,67 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // 0. Language Switcher Logic (Google Translate integration)
+    const langBtns = document.querySelectorAll('.lang-btn');
+    
+    // Read the googtrans cookie to determine the current language
+    function getTranslationCookie() {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; googtrans=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return null;
+    }
+
+    // Set translation cookie and trigger page-wide translation reload
+    function setLanguage(lang) {
+        // Formats: /en/en, /en/hi
+        const cookieValue = `/en/${lang}`;
+        
+        // Write the cookie across the whole domain
+        document.cookie = `googtrans=${cookieValue}; path=/;`;
+        document.cookie = `googtrans=${cookieValue}; path=/; domain=.github.io;`;
+        document.cookie = `googtrans=${cookieValue}; path=/; domain=${window.location.hostname};`;
+        
+        // Update active class state on the buttons
+        langBtns.forEach(btn => {
+            if (btn.getAttribute('data-lang') === lang) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+
+        // Fire Google Translate API dynamically if loaded, or reload the page to apply
+        const googleCombo = document.querySelector('select.goog-te-combo');
+        if (googleCombo) {
+            googleCombo.value = lang;
+            googleCombo.dispatchEvent(new Event('change'));
+        } else {
+            // Fallback: Reload page to let the browser pick up the cookie
+            window.location.reload();
+        }
+    }
+
+    // Check active language on load and sync switcher UI
+    const currentLangCookie = getTranslationCookie();
+    let activeLang = 'en';
+    if (currentLangCookie) {
+        const parts = currentLangCookie.split('/');
+        activeLang = parts[parts.length - 1] || 'en';
+    }
+
+    langBtns.forEach(btn => {
+        const lang = btn.getAttribute('data-lang');
+        if (lang === activeLang) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            setLanguage(lang);
+        });
+    });
+
     // 1. Mobile Menu Toggle & Close on click
     const hamburger = document.querySelector('.hamburger');
     const navLinks = document.querySelector('.nav-links');
