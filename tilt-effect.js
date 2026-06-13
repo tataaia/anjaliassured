@@ -164,6 +164,9 @@
 
     // ─── DEVICE ORIENTATION ───────────────────────────────────────────
     function handleOrientation(e) {
+        // Some devices fire the event with null values even if they lack a gyro
+        if (e.gamma === null && e.beta === null) return;
+        
         isGyroAvailable = true;
         if (initialBeta === null) initialBeta = e.beta || 0;
         rawTilt.gamma = e.gamma || 0;
