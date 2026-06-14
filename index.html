@@ -19,8 +19,8 @@
     <!-- WebGL Colorful Smoke/Water Canvas -->
     <canvas id="fluid-canvas"></canvas>
 
-    <!-- Glass Eagle -->
-    <img src="eagle.png" id="glass-eagle" alt="Glass Eagle">
+    <!-- True 3D Glass Bird Canvas -->
+    <canvas id="bird-canvas"></canvas>
 
     <!-- Header Navigation -->
     <header>
@@ -281,9 +281,11 @@
     <script src="main.js"></script>
 <script src="tilt-effect.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script src="webgl-fluid.js"></script>
+<script src="3d-bird.js"></script>
 
-<!-- GSAP & ScrollTrigger for Noomo effect & Eagle -->
+<!-- GSAP & ScrollTrigger for Noomo effect -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
 <script>
@@ -319,39 +321,9 @@
             y: 200,
             opacity: 0
         });
-
-        // Eagle Flight Path mapped to scroll
-        const eagleTl = gsap.timeline({
-            scrollTrigger: {
-                trigger: "body",
-                start: "top top",
-                end: "bottom bottom",
-                scrub: 1.5 // Smooth catch-up
-            }
-        });
-
-        // The scroll path: moves right, banks, dives, scales
-        eagleTl.to("#glass-eagle", {
-            x: '80vw',
-            y: '30vh',
-            rotation: 15,
-            scale: 0.8,
-            ease: "sine.inOut"
-        }, 0)
-        .to("#glass-eagle", {
-            x: '10vw',
-            y: '60vh',
-            rotation: -20,
-            scale: 1.2,
-            ease: "sine.inOut"
-        }, 0.33)
-        .to("#glass-eagle", {
-            x: '50vw',
-            y: '90vh',
-            rotation: 0,
-            scale: 1,
-            ease: "sine.inOut"
-        }, 0.66);
+        
+        // Note: The 3D bird scroll GSAP logic is handled inside 3d-bird.js 
+        // to control the 3D model's scene position directly.
     });
 </script>
 </body>
