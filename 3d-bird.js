@@ -14,37 +14,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const scene = new THREE.Scene();
 
-    // Add ambient and directional light for the glass refractions
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    // Enhanced Lighting to show the REAL colors of the bird perfectly
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.2); // Brighter ambient
     scene.add(ambientLight);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 2.5);
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.0);
+    hemiLight.position.set(0, 200, 0);
+    scene.add(hemiLight);
+
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 2.0);
     directionalLight.position.set(200, 500, 300);
     scene.add(directionalLight);
 
-    const pointLight = new THREE.PointLight(0x00a896, 3, 1000);
-    pointLight.position.set(0, 100, 200);
-    scene.add(pointLight);
-
-    const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 3000);
+    const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 5000);
     camera.position.set(0, 0, 800);
 
     const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
-
-    // 2. The True Glass Material
-    const glassMaterial = new THREE.MeshPhysicalMaterial({
-        color: 0xffffff,
-        metalness: 0.1,
-        roughness: 0.0,
-        transmission: 1.0, // This makes it look like pure glass!
-        ior: 1.5,
-        thickness: 1.0,
-        transparent: true,
-        opacity: 1,
-        side: THREE.DoubleSide
-    });
+    renderer.outputEncoding = THREE.sRGBEncoding; // Crucial for real textures to look right
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.2;
 
     // Physics Engine Properties
     const physics = {
@@ -55,63 +45,68 @@ document.addEventListener("DOMContentLoaded", () => {
         target: new THREE.Vector3(0, 0, 0)
     };
 
-    // 3. Load the Real 3D Eagle GLB
+    // 2. Load the Real 3D Eagle GLB (Preserving Original Colors & Animations)
     let mixer;
     let birdModel;
     const loader = new THREE.GLTFLoader();
     
-    // We are loading 'eagle.glb' - the user needs to provide a hyper-realistic model
     loader.load('eagle.glb', (gltf) => {
         birdModel = gltf.scene;
         
-        // Apply Glass Material to whatever the model's meshes are
+        // We do NOT override the material anymore! 
+        // We let the real eagle textures shine.
         birdModel.traverse((child) => {
-            if (child.isMesh) {
-                // Keep original UV maps but replace material with our refracting glass
-                child.material = glassMaterial;
+            if (child.isMesh && child.material) {
+                // Just ensure materials are double sided so feathers don't disappear from behind
+                child.material.side = THREE.DoubleSide;
+                child.material.needsUpdate = true;
             }
         });
 
-        // Set initial scale and position
-        // Note: Different models have different scales, we adjust to make it fit
-        birdModel.scale.set(1.5, 1.5, 1.5);
+        // Setup scale and position based on typical sizing
+        // If the eagle is too big/small, these might need tweaking, but standard is 1.5
+        birdModel.scale.set(3.0, 3.0, 3.0); // Made slightly larger for visibility
         birdModel.position.set(-300, 200, -100);
         birdModel.rotation.y = Math.PI / 4; 
         scene.add(birdModel);
 
-        // Setup the Skeletal Animation (Wing Flapping)
+        // Setup the Skeletal Animation (Fix for "No Life / Static Body")
         mixer = new THREE.AnimationMixer(birdModel);
         if (gltf.animations && gltf.animations.length > 0) {
-            // Play the first animation (flying/flapping)
-            const action = mixer.clipAction(gltf.animations[0]);
-            action.setEffectiveTimeScale(1.2); 
-            action.play();
+            // Play ALL animations available in the file to guarantee the wings flap
+            gltf.animations.forEach((clip) => {
+                const action = mixer.clipAction(clip);
+                action.setEffectiveTimeScale(1.5); // Faster, more lively flapping
+                action.play();
+            });
+        } else {
+            console.warn("No animations found in eagle.glb!");
         }
 
     }, undefined, (error) => {
-        console.error("Error loading eagle.glb! Make sure the file exists in the directory.", error);
+        console.error("Error loading eagle.glb! Ensure the file is valid.", error);
     });
 
-    // 4. Connect Physics Target to Scroll
+    // 3. Connect Physics Target to Scroll
     window.addEventListener('scroll', () => {
         const scrollPercent = window.scrollY / (document.body.scrollHeight - window.innerHeight);
         
         // Map scroll to 3D space target for the physics engine to chase
-        const targetX = 500 - (scrollPercent * 1000); 
+        const targetX = 600 - (scrollPercent * 1200); 
         const targetY = 300 - (scrollPercent * 600);  
-        const targetZ = -400 + (scrollPercent * 600); 
+        const targetZ = -400 + (scrollPercent * 800); 
 
         physics.target.set(targetX, targetY, targetZ);
     });
 
-    // 5. Animation Loop
+    // 4. Animation Loop
     const clock = new THREE.Clock();
     function animate() {
         requestAnimationFrame(animate);
         const delta = clock.getDelta();
         const time = clock.getElapsedTime();
         
-        // Update Native 3D Animation (Wings)
+        // Update Native 3D Animation (Flapping Wings)
         if (mixer) {
             mixer.update(delta);
         }
@@ -148,16 +143,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 birdModel.rotation.z += (bankAngle - birdModel.rotation.z) * 0.1;
             }
             
-            // Add a gentle floating breeze to the target
-            physics.target.y += Math.sin(time) * 2;
-            physics.target.x += Math.cos(time * 0.5) * 1;
+            // Add a gentle floating breeze to the body itself to give extra life
+            physics.target.y += Math.sin(time * 3) * 2;
         }
         
         renderer.render(scene, camera);
     }
     animate();
 
-    // 6. Handle Resize
+    // 5. Handle Resize
     window.addEventListener('resize', () => {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
