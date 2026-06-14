@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const canvas = document.getElementById('bird-canvas');
     if (!canvas) return;
 
+    // Make canvas overlay the screen
     canvas.style.position = 'fixed';
     canvas.style.top = '0';
     canvas.style.left = '0';
@@ -13,6 +14,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const scene = new THREE.Scene();
 
+    // Add ambient and directional light for the glass refractions
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    scene.add(ambientLight);
+
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 2.5);
+    directionalLight.position.set(200, 500, 300);
+    scene.add(directionalLight);
+
+    const pointLight = new THREE.PointLight(0x00a896, 3, 1000);
+    pointLight.position.set(0, 100, 200);
+    scene.add(pointLight);
+
     const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 3000);
     camera.position.set(0, 0, 800);
 
@@ -20,174 +33,125 @@ document.addEventListener("DOMContentLoaded", () => {
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
 
-    // 2. The Flapping Vertex Shader & Glass Fragment Shader
-    const vertexShader = `
-        uniform float time;
-        varying vec2 vUv;
+    // 2. The True Glass Material
+    const glassMaterial = new THREE.MeshPhysicalMaterial({
+        color: 0xffffff,
+        metalness: 0.1,
+        roughness: 0.0,
+        transmission: 1.0, // This makes it look like pure glass!
+        ior: 1.5,
+        thickness: 1.0,
+        transparent: true,
+        opacity: 1,
+        side: THREE.DoubleSide
+    });
 
-        void main() {
-            vUv = uv;
-            vec3 pos = position;
-            
-            // Distance from center of the image (the eagle's body)
-            float distFromCenter = abs(uv.x - 0.5);
-            
-            // Flap parameters
-            float flapAmplitude = 180.0; // How high/low wings go
-            float flapSpeed = 4.5;
-            
-            // Phase offset creates a fluid wave (tips lag behind shoulders)
-            float phaseOffset = distFromCenter * 3.0; 
-            
-            // Apply sine wave only to the wings (smoothstep ensures body stays still)
-            float flap = sin(time * flapSpeed - phaseOffset) * flapAmplitude;
-            pos.z += flap * smoothstep(0.05, 0.5, distFromCenter);
-            
-            // Add a gentle whole-body breathing/hovering effect
-            pos.y += sin(time * 2.0) * 15.0;
-
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
-        }
-    `;
-
-    const fragmentShader = `
-        uniform sampler2D map;
-        varying vec2 vUv;
-
-        void main() {
-            vec4 texColor = texture2D(map, vUv);
-            
-            // Boost brightness for the glass glow effect
-            texColor.rgb *= 1.4; 
-            
-            // Fade out the very hard edges if necessary (optional)
-            // But AdditiveBlending will handle the black background perfectly
-            
-            gl_FragColor = texColor;
-        }
-    `;
-
-    // 3. Load the High-Res Image as a Texture
-    const textureLoader = new THREE.TextureLoader();
-    const uniforms = {
-        time: { value: 0.0 },
-        map: { value: null }
+    // Physics Engine Properties
+    const physics = {
+        velocity: new THREE.Vector3(0, 0, 0),
+        acceleration: new THREE.Vector3(0, 0, 0),
+        maxSpeed: 15,
+        maxForce: 0.8,
+        target: new THREE.Vector3(0, 0, 0)
     };
 
-    class ShaderEagle {
-        constructor() {
-            this.mesh = new THREE.Group();
-            
-            textureLoader.load('eagle.png', (texture) => {
-                uniforms.map.value = texture;
-                
-                // Use a dense PlaneGeometry so it has enough vertices to bend smoothly
-                // Image ratio adjustment (assuming standard 1:1 generation, adjust if needed)
-                const geometry = new THREE.PlaneGeometry(600, 600, 64, 64);
-                
-                const material = new THREE.ShaderMaterial({
-                    uniforms: uniforms,
-                    vertexShader: vertexShader,
-                    fragmentShader: fragmentShader,
-                    transparent: true,
-                    side: THREE.DoubleSide,
-                    // AdditiveBlending perfectly removes the black background and brightens the glass
-                    blending: THREE.AdditiveBlending,
-                    depthWrite: false
-                });
+    // 3. Load the Real 3D Eagle GLB
+    let mixer;
+    let birdModel;
+    const loader = new THREE.GLTFLoader();
+    
+    // We are loading 'eagle.glb' - the user needs to provide a hyper-realistic model
+    loader.load('eagle.glb', (gltf) => {
+        birdModel = gltf.scene;
+        
+        // Apply Glass Material to whatever the model's meshes are
+        birdModel.traverse((child) => {
+            if (child.isMesh) {
+                // Keep original UV maps but replace material with our refracting glass
+                child.material = glassMaterial;
+            }
+        });
 
-                const eaglePlane = new THREE.Mesh(geometry, material);
-                
-                // Tilt it slightly forward so it looks like it's flying horizontally
-                eaglePlane.rotation.x = -Math.PI / 6; 
-                
-                this.mesh.add(eaglePlane);
-            });
+        // Set initial scale and position
+        // Note: Different models have different scales, we adjust to make it fit
+        birdModel.scale.set(1.5, 1.5, 1.5);
+        birdModel.position.set(-300, 200, -100);
+        birdModel.rotation.y = Math.PI / 4; 
+        scene.add(birdModel);
 
-            // Physics properties
-            this.velocity = new THREE.Vector3(0, 0, 0);
-            this.acceleration = new THREE.Vector3(0, 0, 0);
-            this.maxSpeed = 15;
-            this.maxForce = 0.6;
-            this.target = new THREE.Vector3(0, 0, 0);
+        // Setup the Skeletal Animation (Wing Flapping)
+        mixer = new THREE.AnimationMixer(birdModel);
+        if (gltf.animations && gltf.animations.length > 0) {
+            // Play the first animation (flying/flapping)
+            const action = mixer.clipAction(gltf.animations[0]);
+            action.setEffectiveTimeScale(1.2); 
+            action.play();
         }
 
-        update() {
-            // Flight Physics Engine (Steering behavior towards target)
-            const desired = new THREE.Vector3().subVectors(this.target, this.mesh.position);
-            const dist = desired.length();
-            desired.normalize();
-            
-            // Arrive behavior (slow down as it gets close)
-            if (dist < 150) {
-                desired.multiplyScalar(this.maxSpeed * (dist / 150));
-            } else {
-                desired.multiplyScalar(this.maxSpeed);
-            }
-
-            const steer = new THREE.Vector3().subVectors(desired, this.velocity);
-            steer.clampLength(0, this.maxForce);
-            
-            this.acceleration.add(steer);
-            this.velocity.add(this.acceleration);
-            this.mesh.position.add(this.velocity);
-            this.acceleration.multiplyScalar(0); // Reset
-
-            // Dynamic Banking & Rotation based on velocity
-            if (this.velocity.lengthSq() > 0.1) {
-                // Look toward movement direction (Y axis rotation)
-                const targetRotY = Math.atan2(this.velocity.x, this.velocity.z);
-                
-                // Pitch up/down based on vertical velocity (X axis rotation)
-                const horizontalVel = Math.sqrt(this.velocity.x * this.velocity.x + this.velocity.z * this.velocity.z);
-                const targetRotX = Math.atan2(-this.velocity.y, horizontalVel);
-                
-                // Smoothly interpolate rotations
-                this.mesh.rotation.y += (targetRotY - this.mesh.rotation.y) * 0.08;
-                this.mesh.rotation.x += (targetRotX - this.mesh.rotation.x) * 0.08;
-
-                // Bank into turns (Z rotation) like a real bird/aircraft
-                const bankAngle = -this.velocity.x * 0.05;
-                this.mesh.rotation.z += (bankAngle - this.mesh.rotation.z) * 0.08;
-            }
-        }
-    }
-
-    const eagle = new ShaderEagle();
-    eagle.mesh.position.set(0, 400, -200); // Start high up
-    scene.add(eagle.mesh);
+    }, undefined, (error) => {
+        console.error("Error loading eagle.glb! Make sure the file exists in the directory.", error);
+    });
 
     // 4. Connect Physics Target to Scroll
     window.addEventListener('scroll', () => {
-        // Calculate scroll percentage
         const scrollPercent = window.scrollY / (document.body.scrollHeight - window.innerHeight);
         
-        // Map scroll percentage to a 3D target path
-        // 0% = high up, far right
-        // 50% = middle, swooping left
-        // 100% = close to camera, diving down
-        const targetX = 500 - (scrollPercent * 1000); // 500 to -500
-        const targetY = 300 - (scrollPercent * 600);  // 300 to -300
-        const targetZ = -400 + (scrollPercent * 600); // -400 to 200 (flies closer)
+        // Map scroll to 3D space target for the physics engine to chase
+        const targetX = 500 - (scrollPercent * 1000); 
+        const targetY = 300 - (scrollPercent * 600);  
+        const targetZ = -400 + (scrollPercent * 600); 
 
-        eagle.target.set(targetX, targetY, targetZ);
+        physics.target.set(targetX, targetY, targetZ);
     });
 
     // 5. Animation Loop
     const clock = new THREE.Clock();
     function animate() {
         requestAnimationFrame(animate);
+        const delta = clock.getDelta();
         const time = clock.getElapsedTime();
         
-        // Update the shader time uniform so the wings flap
-        uniforms.time.value = time;
+        // Update Native 3D Animation (Wings)
+        if (mixer) {
+            mixer.update(delta);
+        }
         
-        // Update physics and banking
-        eagle.update();
-        
-        // Add a gentle wind breeze to the target when not scrolling
-        eagle.target.y += Math.sin(time) * 3;
-        eagle.target.x += Math.cos(time * 0.7) * 2;
+        // Update Flight Physics
+        if (birdModel) {
+            const desired = new THREE.Vector3().subVectors(physics.target, birdModel.position);
+            const dist = desired.length();
+            desired.normalize();
+            
+            if (dist < 150) {
+                desired.multiplyScalar(physics.maxSpeed * (dist / 150));
+            } else {
+                desired.multiplyScalar(physics.maxSpeed);
+            }
+
+            const steer = new THREE.Vector3().subVectors(desired, physics.velocity);
+            steer.clampLength(0, physics.maxForce);
+            
+            physics.acceleration.add(steer);
+            physics.velocity.add(physics.acceleration);
+            birdModel.position.add(physics.velocity);
+            physics.acceleration.multiplyScalar(0);
+
+            // Dynamic Banking
+            if (physics.velocity.lengthSq() > 0.1) {
+                const targetRotY = Math.atan2(physics.velocity.x, physics.velocity.z);
+                const targetRotX = Math.atan2(-physics.velocity.y, Math.sqrt(physics.velocity.x*physics.velocity.x + physics.velocity.z*physics.velocity.z));
+                
+                birdModel.rotation.y += (targetRotY - birdModel.rotation.y) * 0.1;
+                birdModel.rotation.x += (targetRotX - birdModel.rotation.x) * 0.1;
+
+                const bankAngle = -physics.velocity.x * 0.05;
+                birdModel.rotation.z += (bankAngle - birdModel.rotation.z) * 0.1;
+            }
+            
+            // Add a gentle floating breeze to the target
+            physics.target.y += Math.sin(time) * 2;
+            physics.target.x += Math.cos(time * 0.5) * 1;
+        }
         
         renderer.render(scene, camera);
     }
