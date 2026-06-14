@@ -7,8 +7,16 @@
     <meta name="description" content="Secure your family's future with Anjali Devi, trusted Tata AIA Life Insurance & Financial Protection Advisor in Gopalganj, Bihar. Get customized term plans, savings, and retirement solutions.">
     <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="tilt-effect.css">
+<link rel="stylesheet" href="fluid-effect.css">
+<link rel="stylesheet" href="noomo-effect.css">
 </head>
-<body class="theme-teal">
+<body class="theme-teal noomo-theme">
+    <!-- Noomo Preloader -->
+    <div class="preloader">
+        <div class="preloader-wrapper"></div>
+    </div>
+
+    <canvas id="fluid-canvas"></canvas>
 
     <!-- Header Navigation -->
     <header>
@@ -38,39 +46,17 @@
         </nav>
     </header>
 
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="hero-container">
-            <div class="hero-content">
-                <div class="hero-badge">Authorized Tata AIA Life Advisor</div>
-                <h1>Ensure A Secured Tomorrow For Your <span>Loved Ones</span></h1>
-                <p>Welcome to Anjali Assured. I am <strong>Anjali Devi</strong>, your dedicated Financial Protection Advisor. I help families, young professionals, and retirees choose the right Life Insurance, Wealth Savings, and Retirement plans backed by trust of Tata AIA.</p>
-                <div class="hero-buttons">
-                    <a href="contact.html" class="btn-cta">Plan Your Security</a>
-                    <a href="solutions.html" class="btn-secondary">Explore Solutions</a>
-                </div>
-            </div>
-            <div class="hero-image">
-                <div class="hero-card">
-                    <span class="hero-badge" style="background-color: rgba(10,37,64,0.1); color: var(--primary);">Trust & security</span>
-                    <h3 style="margin-bottom: 0.75rem; font-size: 1.5rem;">Why Tata AIA Life?</h3>
-                    <p style="font-size: 0.95rem; color: var(--text-dark); margin-bottom: 1rem;">Tata AIA Life Insurance is one of India's leading insurance brands, combining Tata's leadership and trust with AIA's global insurance presence.</p>
-                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.9rem; font-weight: 500;">
-                        <li style="display: flex; align-items: center; gap: 0.5rem;">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="color: var(--accent);"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                            Industry-leading Claim Settlement Ratio
-                        </li>
-                        <li style="display: flex; align-items: center; gap: 0.5rem;">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="color: var(--accent);"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                            Tax Saving Benefits under Sec 80C/10(10D)
-                        </li>
-                        <li style="display: flex; align-items: center; gap: 0.5rem;">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="color: var(--accent);"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                            Hassle-free, quick settlement process
-                        </li>
-                    </ul>
-                </div>
-            </div>
+    <!-- Hero Section (Noomo Style) -->
+    <section class="noomo-hero section-1">
+        <div class="noomo-hero-container">
+            <h2 class="text-reveal-fast"> The power<br><span>of</span> financial </h2>
+            <h1 class="text-reveal">protection</h1>
+            
+            <div class="hero-badge text-reveal-slow" style="margin-top: 2rem; border-color: rgba(255,255,255,0.2); color: rgba(255,255,255,0.8);">Authorized Tata AIA Life Advisor</div>
+        </div>
+        <div class="scroll-indicator text-reveal-slow">
+            <span>Scroll to explore</span>
+            <div class="line"></div>
         </div>
     </section>
 
@@ -290,5 +276,46 @@
 
     <script src="main.js"></script>
 <script src="tilt-effect.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="fluid-effect.js"></script>
+
+<!-- GSAP & ScrollTrigger for Noomo effect -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+<script>
+    // Noomo Style Preloader & GSAP Init
+    document.addEventListener("DOMContentLoaded", () => {
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Preloader fade out
+        setTimeout(() => {
+            gsap.to(".preloader", {
+                opacity: 0,
+                duration: 1.5,
+                ease: "power2.inOut",
+                onComplete: () => {
+                    document.querySelector('.preloader').style.display = 'none';
+                    
+                    // Reveal text after preloader
+                    gsap.to(".text-reveal-fast", { opacity: 1, y: 0, duration: 1.2, ease: "power3.out" });
+                    gsap.to(".text-reveal", { opacity: 1, y: 0, duration: 1.4, delay: 0.2, ease: "power3.out" });
+                    gsap.to(".text-reveal-slow", { opacity: 1, y: 0, duration: 1.5, delay: 0.5, ease: "power2.out" });
+                }
+            });
+        }, 800);
+
+        // ScrollTrigger parallax for hero
+        gsap.to(".noomo-hero-container", {
+            scrollTrigger: {
+                trigger: ".noomo-hero",
+                start: "top top",
+                end: "bottom top",
+                scrub: 1
+            },
+            y: 200,
+            opacity: 0
+        });
+    });
+</script>
 </body>
 </html>

@@ -1,0 +1,120 @@
+#fluid-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* Beautiful gradient background matching Noomo Agency storytelling site */
+body {
+    background: linear-gradient(135deg, #e8ddf5 0%, #f6f0ff 30%, #eaf2ff 70%, #dcf0fe 100%) !important;
+    overflow-x: hidden;
+}
+
+/* Completely transparent minimalist header matching Noomo navigation */
+header {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: none !important;
+    border-bottom: none !important;
+}
+
+.nav-container {
+    background: transparent !important;
+}
+
+/* Storytelling scroll sections - default transparent, fade in when active */
+.hero, .section, .about-section, .blog-header, footer {
+    background: transparent !important;
+    opacity: 0;
+    transform: translateY(50px);
+    transition: opacity 1.2s cubic-bezier(0.215, 0.610, 0.355, 1.000), 
+                transform 1.2s cubic-bezier(0.215, 0.610, 0.355, 1.000);
+    will-change: opacity, transform;
+}
+
+/* Active visible state */
+.hero.story-visible, 
+.section.story-visible, 
+.about-section.story-visible, 
+.blog-header.story-visible, 
+footer.story-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Exit state (fading out upwards) */
+.hero.story-exit, 
+.section.story-exit, 
+.about-section.story-exit, 
+.blog-header.story-exit {
+    opacity: 0;
+    transform: translateY(-50px);
+}
+
+.hero::after {
+    background: none !important;
+}
+
+/* Premium glassmorphic containers */
+.hero-card, 
+.service-card, 
+.profile-card, 
+.contact-form, 
+.blog-card, 
+.legal-container {
+    background: rgba(255, 255, 255, 0.28) !important;
+    backdrop-filter: blur(20px) saturate(140%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(140%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    box-shadow: 0 10px 30px rgba(10, 37, 64, 0.02) !important;
+    transition: transform 0.4s ease, border-color 0.4s ease !important;
+}
+
+/* Subtle typography styles */
+h1, h2, h3, h4, h5, h6 {
+    color: #0d1e3d !important;
+}
+
+p, span, li, label {
+    color: #2c3e5a !important;
+}
+
+.logo span {
+    color: #7c4dff !important;
+}
+
+.btn-cta {
+    background: linear-gradient(135deg, #7c4dff 0%, #6200ea 100%) !important;
+    box-shadow: 0 6px 20px rgba(124, 77, 255, 0.25) !important;
+    color: #ffffff !important;
+}
+
+.btn-secondary {
+    border-color: #6200ea !important;
+    color: #6200ea !important;
+    background: transparent !important;
+}
+
+.btn-secondary:hover {
+    background-color: #6200ea !important;
+    color: #ffffff !important;
+}
+
+.lang-switcher {
+    background: rgba(124, 77, 255, 0.08) !important;
+    border: 1px solid rgba(124, 77, 255, 0.15) !important;
+}
+
+.lang-btn {
+    color: #6200ea !important;
+}
+
+.lang-btn.active {
+    background-color: #6200ea !important;
+    color: #ffffff !important;
+}
