@@ -494,20 +494,21 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* ─────────────────────────────────────────────
-   * 7. LOAD EAGLE MODEL & CLONE FOR EACH BIRD
+   * 7. LOAD EAGLE MODEL & CLONE PROPERLY FOR EACH BIRD
+   * Uses THREE.SkeletonUtils.clone() for correct skinned mesh cloning
    * ───────────────────────────────────────────── */
   const loader = new THREE.GLTFLoader();
-  let eagleAnimations = [];
 
   loader.load("eagle.glb", (gltf) => {
-    eagleAnimations = gltf.animations;
     const originalModel = gltf.scene;
+    const animations = gltf.animations;
 
     birds.forEach((bird, idx) => {
-      const clone = originalModel.clone();
-      clone.scale.set(0.25, 0.25, 0.25); // Comfortable size
+      // SkeletonUtils.clone properly duplicates SkinnedMesh + Skeleton + Bones
+      const clone = THREE.SkeletonUtils.clone(originalModel);
+      clone.scale.set(0.25, 0.25, 0.25);
 
-      // Preserve materials
+      // Ensure double-sided rendering
       clone.traverse(child => {
         if (child.isMesh && child.material) {
           child.material = child.material.clone();
@@ -515,18 +516,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
 
-      // Slight color tint variation per bird
-      const tints = [0xffffff, 0xeeddcc, 0xddccbb, 0xccbbaa];
-      clone.traverse(child => {
-        if (child.isMesh && child.material && child.material.color) {
-          child.material.color.multiply(new THREE.Color(tints[idx]));
-        }
-      });
-
-      bird.setModel(clone, eagleAnimations);
+      bird.setModel(clone, animations);
     });
 
-    console.log("[3d-bird] 4 eagles loaded, animations:", eagleAnimations.length);
+    console.log("[3d-bird] 4 eagles loaded (SkeletonUtils), animations:", animations.length);
   }, undefined, (err) => {
     console.error("[3d-bird] Failed to load eagle.glb:", err);
   });
