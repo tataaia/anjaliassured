@@ -56,6 +56,12 @@
                     <div class="bg-panel"></div>
                 </div>
                 <div class="menu-inner">
+                    <button data-menu-toggle="" class="menu-close-btn" aria-label="Close menu">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
                     <ul class="menu-list">
                         <li class="menu-list-item">
                             <a href="about.html" class="menu-link w-inline-block">
@@ -171,5 +177,6 @@
 
         document.addEventListener("DOMContentLoaded", () => { initMenu(); });
     </script>
+    <script src="custom-cursor.js"></script>
 </body>
 </html>
