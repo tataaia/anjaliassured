@@ -138,8 +138,11 @@
 
             let tl = gsap.timeline();
 
-            const openNav = () => {
+            const openNav = (pushHistory = true) => {
                 navWrap.setAttribute("data-nav", "open");
+                if (pushHistory) {
+                    history.pushState({ menu: "open" }, "");
+                }
                 tl.clear()
                 .set(navWrap,{display:"block"})
                 .set(menu,{xPercent:0},"<")
@@ -151,8 +154,11 @@
                 .fromTo(fadeTargets,{autoAlpha:0,yPercent:50},{autoAlpha:1, yPercent:0,stagger:0.04},"<+=0.2");
             };
 
-            const closeNav = () => {
+            const closeNav = (popHistory = true) => {
                 navWrap.setAttribute("data-nav", "closed");
+                if (popHistory && history.state && history.state.menu === "open") {
+                    history.back();
+                }
                 tl.clear()
                 .to(overlay,{autoAlpha:0})
                 .to(menu,{xPercent:120},"<")
@@ -164,8 +170,15 @@
             menuToggles.forEach((toggle) => {
                 toggle.addEventListener("click", () => {
                     let state = navWrap.getAttribute("data-nav");
-                    if (state === "open") { closeNav(); } else { openNav(); }
+                    if (state === "open") { closeNav(true); } else { openNav(true); }
                 });
+            });
+
+            window.addEventListener("popstate", (e) => {
+                let state = navWrap.getAttribute("data-nav");
+                if (state === "open") {
+                    closeNav(false); // Menu closed via browser back navigation, don't double pop history
+                }
             });
 
             document.addEventListener("keydown", (e) => {
