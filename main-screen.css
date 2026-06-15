@@ -141,41 +141,51 @@ ul {
 }
 
 .menu-button {
-    gap: 0.625rem;
-    background: none;
-    border: none;
-    justify-content: flex-end;
-    align-items: center;
-    margin: -1em;
-    padding: 1em;
+    background: rgba(245, 242, 237, 0.65); /* Matches light theme with transparent glass */
+    border: 1px solid rgba(19, 19, 19, 0.12);
+    border-radius: 30px;
+    padding: 0.6em 1.25em;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+    transition: all 0.4s var(--cubic-default);
     display: flex;
+    align-items: center;
+    gap: 0.625rem;
     cursor: pointer;
     color: var(--color-dark);
     font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
 }
 
 .menu-button-text {
     flex-flow: column;
     justify-content: flex-start;
     align-items: flex-end;
-    height: 1.125em;
+    height: 1em;
     display: flex;
     overflow: hidden;
 }
 
+.menu-button-text p {
+    font-size: 0.85em;
+    line-height: 1.2;
+}
+
 .menu-button-icon {
-    width: 1em;
-    height: 1em;
+    width: 0.9em;
+    height: 0.9em;
 }
 
 .icon-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: transform 0.4s var(--cubic-default);
 }
 
-.p-large {
-    font-size: 1.125em;
-    font-family: 'Inter', Arial, Helvetica, sans-serif;
-}
 
 .p-small {
     font-size: 0.875em;
@@ -350,6 +360,13 @@ ul {
 
 /* --- Hover Effects --- */
 @media (hover: hover) {
+    .menu-button:hover {
+        background: rgba(19, 19, 19, 0.05);
+        border-color: rgba(19, 19, 19, 0.25);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    }
+
     .menu-button:hover .icon-wrap {
         transform: rotate(90deg);
     }
