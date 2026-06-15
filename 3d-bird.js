@@ -1,6 +1,7 @@
 /**
- * 3D Bird Engine v4 — Premium Autonomous Eagles
+ * 3D Bird Engine v5 — Premium Autonomous Eagles
  * ────────────────────────────────────────────────
+ * - Mobile Optimized: Dynamically adjusts boundaries, particle counts, and scales for phones
  * - Smooth quaternion flight interpolation (no sudden turns)
  * - 120 dynamic waypoint nodes covering all viewport corners (100+ path variations)
  * - Smaller ground with procedural light/dark green grass texture & 3D low-poly grass tufts
@@ -16,13 +17,18 @@ document.addEventListener("DOMContentLoaded", () => {
   const canvas = document.getElementById("bird-canvas");
   if (!canvas) return;
 
+  const isMobile = window.innerWidth < 768;
+
   const scene = new THREE.Scene();
-  scene.fog = new THREE.FogExp2(0xe8e4df, 0.0006);
+  scene.fog = new THREE.FogExp2(0xe8e4df, isMobile ? 0.001 : 0.0006);
 
   const camera = new THREE.PerspectiveCamera(
-    50, window.innerWidth / window.innerHeight, 1, 8000
+    isMobile ? 60 : 50, // Wider FOV on mobile
+    window.innerWidth / window.innerHeight, 
+    1, 
+    8000
   );
-  camera.position.set(0, 80, 950);
+  camera.position.set(0, isMobile ? 60 : 80, isMobile ? 800 : 950);
   camera.lookAt(0, 30, 0);
 
   const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
@@ -49,28 +55,28 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ─────────────────────────────────────────────
    * 3. PROCEDURAL GRASS GROUND & 3D TUFTS
    * ───────────────────────────────────────────── */
-  const groundSize = 1800;
-  const groundY = -270; // Positioned lower to cover less vertical screen area
+  const groundSize = isMobile ? 1200 : 1800;
+  const groundY = isMobile ? -230 : -270; // Positioned lower to cover less vertical screen area
 
   // Procedural Canvas Grass Texture
   const grassCanvas = document.createElement("canvas");
-  grassCanvas.width = 512;
-  grassCanvas.height = 512;
+  grassCanvas.width = 256;
+  grassCanvas.height = 256;
   const ctx = grassCanvas.getContext("2d");
   
   // Base dark green field color
   ctx.fillStyle = "#2d4d1e";
-  ctx.fillRect(0, 0, 512, 512);
+  ctx.fillRect(0, 0, 256, 256);
   
-  // Paint 25,000 fine grass blades in light and dark green tones
-  for (let i = 0; i < 25000; i++) {
-    const x = Math.random() * 512;
-    const y = Math.random() * 512;
-    const len = 4 + Math.random() * 8;
+  // Paint 12,000 fine grass blades in light and dark green tones
+  for (let i = 0; i < 12000; i++) {
+    const x = Math.random() * 256;
+    const y = Math.random() * 256;
+    const len = 4 + Math.random() * 6;
     const angle = (Math.random() - 0.5) * 0.25;
     
     ctx.strokeStyle = Math.random() > 0.45 ? "#5c8c43" : "#7fb85d"; // Light/medium grass greens
-    ctx.lineWidth = 1 + Math.random() * 1.5;
+    ctx.lineWidth = 1 + Math.random();
     ctx.beginPath();
     ctx.moveTo(x, y);
     ctx.lineTo(x + Math.sin(angle) * len, y - len);
@@ -80,7 +86,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const grassTexture = new THREE.CanvasTexture(grassCanvas);
   grassTexture.wrapS = THREE.RepeatWrapping;
   grassTexture.wrapT = THREE.RepeatWrapping;
-  grassTexture.repeat.set(12, 12);
+  grassTexture.repeat.set(10, 10);
 
   const groundGeo = new THREE.PlaneGeometry(groundSize, groundSize);
   const groundMat = new THREE.MeshLambertMaterial({ 
@@ -92,20 +98,21 @@ document.addEventListener("DOMContentLoaded", () => {
   ground.position.y = groundY;
   scene.add(ground);
 
-  // Scatter 3D grass tufts for depth
+  // Scatter low-poly 3D grass blades
   const grassGroup = new THREE.Group();
   scene.add(grassGroup);
 
-  const bladeGeo = new THREE.ConeGeometry(1.2, 16, 3);
-  bladeGeo.translate(0, 8, 0); // Origin at base
+  const bladeGeo = new THREE.ConeGeometry(1.0, 14, 3);
+  bladeGeo.translate(0, 7, 0); // Origin at base
 
-  for (let i = 0; i < 250; i++) {
+  const grassCount = isMobile ? 80 : 220;
+  for (let i = 0; i < grassCount; i++) {
     const bladeMat = new THREE.MeshLambertMaterial({
       color: new THREE.Color().setHSL(0.24 + Math.random() * 0.08, 0.65, 0.22 + Math.random() * 0.2)
     });
     const blade = new THREE.Mesh(bladeGeo, bladeMat);
-    const gx = (Math.random() - 0.5) * (groundSize - 200);
-    const gz = (Math.random() - 0.5) * (groundSize - 200);
+    const gx = (Math.random() - 0.5) * (groundSize - 150);
+    const gz = (Math.random() - 0.5) * (groundSize - 150);
     
     blade.position.set(gx, groundY - 1, gz);
     const scale = 0.4 + Math.random() * 0.7;
@@ -211,12 +218,17 @@ document.addEventListener("DOMContentLoaded", () => {
     { minX: -180, maxX: 180, minY: -60, maxY: 80, minZ: 200, maxZ: 500 }   // Center-Low
   ];
 
+  // Adjust coordinates for mobile viewports to keep birds in frame
+  const scaleX = isMobile ? 0.45 : 1.0;
+  const scaleY = isMobile ? 0.75 : 1.0;
+  const scaleZ = isMobile ? 0.65 : 1.0;
+
   for (let i = 0; i < 120; i++) {
     const q = quads[i % quads.length];
     waypointPool.push(new THREE.Vector3(
-      q.minX + Math.random() * (q.maxX - q.minX),
-      q.minY + Math.random() * (q.maxY - q.minY),
-      q.minZ + Math.random() * (q.maxZ - q.minZ)
+      (q.minX + Math.random() * (q.maxX - q.minX)) * scaleX,
+      (q.minY + Math.random() * (q.maxY - q.minY)) * scaleY,
+      (q.minZ + Math.random() * (q.maxZ - q.minZ)) * scaleZ
     ));
   }
 
@@ -245,8 +257,8 @@ document.addEventListener("DOMContentLoaded", () => {
       this.velocity = new THREE.Vector3(
         (Math.random() - 0.5) * 2, 0.4, (Math.random() - 0.5) * 2
       );
-      this.maxSpeed = 3.2 + Math.random() * 1.0;
-      this.maxForce = 0.05 + Math.random() * 0.03;
+      this.maxSpeed = (isMobile ? 2.5 : 3.2) + Math.random() * 0.8;
+      this.maxForce = (isMobile ? 0.04 : 0.05) + Math.random() * 0.02;
 
       // Routes (quadrant shuffled for full screen coverage)
       this.waypoints = [];
@@ -263,7 +275,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Soaring state settings
       this.soarAngle = Math.random() * Math.PI * 2;
       this.soarCenter = new THREE.Vector3();
-      this.soarRadius = 140 + Math.random() * 80;
+      this.soarRadius = (isMobile ? 80 : 140) + Math.random() * 60;
 
       this.decisionTimer = 4 + Math.random() * 8;
     }
@@ -304,7 +316,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const desired = new THREE.Vector3().subVectors(target, this.position);
       const dist = desired.length();
       let speed = this.maxSpeed;
-      if (dist < 100) speed = this.maxSpeed * (dist / 100);
+      if (dist < 80) speed = this.maxSpeed * (dist / 80);
 
       desired.normalize().multiplyScalar(speed);
       const steer = new THREE.Vector3().subVectors(desired, this.velocity);
@@ -313,7 +325,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     separate(allBirds) {
-      const minDistance = 220;
+      const minDistance = isMobile ? 120 : 220;
       const steer = new THREE.Vector3();
       let count = 0;
       for (const other of allBirds) {
@@ -349,24 +361,24 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       if (this.state === BIRD_STATES.FLYING || this.state === BIRD_STATES.SOARING) {
-        if (roll < 0.14) {
+        if (roll < 0.12) {
           // Select landing position on green grass ground
           this.state = BIRD_STATES.LANDING;
           this.landingTarget = new THREE.Vector3(
-            (Math.random() - 0.5) * (groundSize - 300),
-            groundY + 12,
-            (Math.random() - 0.5) * (groundSize - 300)
+            (Math.random() - 0.5) * (groundSize - 200),
+            groundY + (isMobile ? 8 : 12),
+            (Math.random() - 0.5) * (groundSize - 200)
           );
-        } else if (roll < 0.4) {
+        } else if (roll < 0.38) {
           // Soaring glide circle
           this.state = BIRD_STATES.SOARING;
           this.soarCenter.copy(this.position);
-          this.soarCenter.y = THREE.MathUtils.clamp(this.position.y + 40, 100, 350);
+          this.soarCenter.y = THREE.MathUtils.clamp(this.position.y + 40, isMobile ? 60 : 100, isMobile ? 250 : 350);
           this.soarAngle = Math.atan2(
             this.position.z - this.soarCenter.z,
             this.position.x - this.soarCenter.x
           );
-          this.stateTimer = 6 + Math.random() * 10;
+          this.stateTimer = 5 + Math.random() * 8;
         } else {
           this.state = BIRD_STATES.FLYING;
           this.generateNewPath();
@@ -380,16 +392,16 @@ document.addEventListener("DOMContentLoaded", () => {
       playPanicChirp();
 
       this.state = BIRD_STATES.SCARED;
-      this.scareTimer = 3.5;
+      this.scareTimer = 3.0;
 
       // Fly back and up (shrinking size / zooming away)
       const scareVector = new THREE.Vector3(
-        (Math.random() - 0.5) * 500,
-        280 + Math.random() * 150,
-        900 + Math.random() * 400 // Zoom further back into space
+        (Math.random() - 0.5) * (isMobile ? 250 : 500),
+        (isMobile ? 200 : 280) + Math.random() * 100,
+        (isMobile ? 650 : 900) + Math.random() * 300 // Zoom further back into space
       );
       this.scareTarget = scareVector;
-      this.velocity.multiplyScalar(2.2);
+      this.velocity.multiplyScalar(2.0);
     }
 
     update(dt, allBirds) {
@@ -403,7 +415,7 @@ document.addEventListener("DOMContentLoaded", () => {
       this.decisionTimer -= dt;
       if (this.decisionTimer <= 0) {
         this.makeDecision();
-        this.decisionTimer = 5 + Math.random() * 10;
+        this.decisionTimer = 5 + Math.random() * 8;
       }
 
       const steer = new THREE.Vector3();
@@ -414,7 +426,7 @@ document.addEventListener("DOMContentLoaded", () => {
           steer.add(this.seek(wpTarget));
           steer.add(this.separate(allBirds));
 
-          if (this.position.distanceTo(wpTarget) < 70) {
+          if (this.position.distanceTo(wpTarget) < (isMobile ? 45 : 70)) {
             this.currentWP++;
             if (this.currentWP >= this.waypoints.length) {
               this.generateNewPath();
@@ -425,10 +437,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         case BIRD_STATES.SOARING:
           // Circular soaring path
-          this.soarAngle += dt * 0.28;
+          this.soarAngle += dt * 0.32;
           const soarWP = new THREE.Vector3(
             this.soarCenter.x + Math.cos(this.soarAngle) * this.soarRadius,
-            this.soarCenter.y + Math.sin(dt * 0.4) * 15,
+            this.soarCenter.y + Math.sin(dt * 0.4) * 12,
             this.soarCenter.z + Math.sin(this.soarAngle) * this.soarRadius
           );
           steer.add(this.seek(soarWP));
@@ -444,18 +456,18 @@ document.addEventListener("DOMContentLoaded", () => {
         case BIRD_STATES.LANDING:
           steer.add(this.seek(this.landingTarget));
           
-          if (this.position.y < groundY + 100) {
-            this.velocity.multiplyScalar(0.96); // Decelerate on landing approach
+          if (this.position.y < groundY + 80) {
+            this.velocity.multiplyScalar(0.95); // Decelerate on landing approach
             targetTimeScale = 0.25; // spread wings for landing stall
           } else {
             targetTimeScale = 0.65;
           }
 
-          if (this.position.y <= groundY + 13) {
+          if (this.position.y <= groundY + (isMobile ? 9 : 13)) {
             this.state = BIRD_STATES.GROUNDED;
             this.velocity.set(0, 0, 0);
-            this.position.y = groundY + 12;
-            this.groundTime = 4 + Math.random() * 8;
+            this.position.y = groundY + (isMobile ? 8 : 12);
+            this.groundTime = 3 + Math.random() * 6;
           }
           break;
 
@@ -465,18 +477,18 @@ document.addEventListener("DOMContentLoaded", () => {
           pauseAnimation = true; // Fold wings on ground
           if (this.groundTime <= 0) {
             this.state = BIRD_STATES.TAKEOFF;
-            this.stateTimer = 2.0;
+            this.stateTimer = 1.8;
           }
           break;
 
         case BIRD_STATES.TAKEOFF:
           // Lift upward rapidly
-          this.velocity.y += 0.3;
-          this.velocity.x += (Math.random() - 0.5) * 0.15;
+          this.velocity.y += 0.28;
+          this.velocity.x += (Math.random() - 0.5) * 0.12;
           targetTimeScale = 2.4; // High frequency takeoff flap
 
           this.stateTimer -= dt;
-          if (this.stateTimer <= 0 || this.position.y > 60) {
+          if (this.stateTimer <= 0 || this.position.y > 40) {
             this.state = BIRD_STATES.FLYING;
           }
           break;
@@ -495,20 +507,23 @@ document.addEventListener("DOMContentLoaded", () => {
       // Physics Integration
       this.velocity.add(steer);
 
-      const maxSpeedClamp = this.state === BIRD_STATES.SCARED ? this.maxSpeed * 2.2 : this.maxSpeed;
+      const maxSpeedClamp = this.state === BIRD_STATES.SCARED ? this.maxSpeed * 2.0 : this.maxSpeed;
       if (this.velocity.length() > maxSpeedClamp) {
         this.velocity.normalize().multiplyScalar(maxSpeedClamp);
       }
 
       // Prevent flying backwards relative to camera setup
-      if (this.state !== BIRD_STATES.GROUNDED && this.velocity.length() < 1.8) {
-        this.velocity.normalize().multiplyScalar(1.8);
+      if (this.state !== BIRD_STATES.GROUNDED && this.velocity.length() < (isMobile ? 1.2 : 1.8)) {
+        this.velocity.normalize().multiplyScalar(isMobile ? 1.2 : 1.8);
       }
 
       this.position.add(this.velocity);
 
-      // Enforce scene boundaries
-      const bx = 650, byUp = 450, bzMin = 50, bzMax = 1300;
+      // ── MOBILE VIEWPORT BOUNDARY ENFORCEMENT ──
+      const bx = isMobile ? 260 : 650;
+      const byUp = isMobile ? 320 : 450;
+      const bzMin = isMobile ? 120 : 50;
+      const bzMax = isMobile ? 750 : 1300;
       const push = 0.14;
 
       if (this.position.x > bx) this.velocity.x -= push;
@@ -556,7 +571,12 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ─────────────────────────────────────────────
    * 7. SPAWN BIRDS IN VISIBLE CAMERA RANGE
    * ───────────────────────────────────────────── */
-  const startPositions = [
+  const startPositions = isMobile ? [
+    new THREE.Vector3(-180, 120, 400),
+    new THREE.Vector3(180, 100, 380),
+    new THREE.Vector3(-80, 150, 450),
+    new THREE.Vector3(80, 160, 320)
+  ] : [
     new THREE.Vector3(-450, 180, 450),
     new THREE.Vector3(450, 150, 400),
     new THREE.Vector3(-150, 220, 500),
@@ -577,7 +597,7 @@ document.addEventListener("DOMContentLoaded", () => {
     birds.forEach((bird, idx) => {
       // Use SkeletonUtils to clone bones/animation weights correctly
       const clone = THREE.SkeletonUtils.clone(originalModel);
-      clone.scale.set(0.24, 0.24, 0.24);
+      clone.scale.set(isMobile ? 0.16 : 0.24, isMobile ? 0.16 : 0.24, isMobile ? 0.16 : 0.24); // Scale down slightly on mobile
 
       // Keep original model colors & set DoubleSide
       clone.traverse(child => {
@@ -598,13 +618,13 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ─────────────────────────────────────────────
    * 8. MAGICAL PARTICLES SYSTEM
    * ───────────────────────────────────────────── */
-  const dustCount = 120;
+  const dustCount = isMobile ? 40 : 120;
   const dustPos = new Float32Array(dustCount * 3);
   const dustVel = [];
   for (let i = 0; i < dustCount; i++) {
-    dustPos[i * 3] = (Math.random() - 0.5) * 1400;
-    dustPos[i * 3 + 1] = Math.random() * 500 - 100;
-    dustPos[i * 3 + 2] = Math.random() * 800;
+    dustPos[i * 3] = (Math.random() - 0.5) * (isMobile ? 600 : 1400);
+    dustPos[i * 3 + 1] = Math.random() * (isMobile ? 350 : 500) - 100;
+    dustPos[i * 3 + 2] = Math.random() * (isMobile ? 500 : 800);
     dustVel.push(new THREE.Vector3(
       (Math.random() - 0.5) * 0.15,
       (Math.random() - 0.5) * 0.12,
@@ -614,7 +634,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const dustGeo = new THREE.BufferGeometry();
   dustGeo.setAttribute("position", new THREE.BufferAttribute(dustPos, 3));
   const dustMat = new THREE.PointsMaterial({
-    color: 0xffd966, size: 3.2, transparent: true, opacity: 0.55,
+    color: 0xffd966, size: isMobile ? 2.5 : 3.2, transparent: true, opacity: 0.55,
     depthWrite: false, blending: THREE.AdditiveBlending, sizeAttenuation: true
   });
   scene.add(new THREE.Points(dustGeo, dustMat));
@@ -625,21 +645,21 @@ document.addEventListener("DOMContentLoaded", () => {
       pos[i * 3] += dustVel[i].x;
       pos[i * 3 + 1] += dustVel[i].y;
       pos[i * 3 + 2] += dustVel[i].z;
-      if (pos[i * 3] > 700) pos[i * 3] = -700;
-      if (pos[i * 3] < -700) pos[i * 3] = 700;
-      if (pos[i * 3 + 1] > 450) pos[i * 3 + 1] = -100;
-      if (pos[i * 3 + 1] < -100) pos[i * 3 + 1] = 450;
+      if (pos[i * 3] > (isMobile ? 350 : 700)) pos[i * 3] = isMobile ? -350 : -700;
+      if (pos[i * 3] < (isMobile ? -350 : -700)) pos[i * 3] = isMobile ? 350 : 700;
+      if (pos[i * 3 + 1] > (isMobile ? 350 : 450)) pos[i * 3 + 1] = -100;
+      if (pos[i * 3 + 1] < -100) pos[i * 3 + 1] = isMobile ? 350 : 450;
     }
     dustGeo.attributes.position.needsUpdate = true;
   };
 
   // Flying flower petals
-  const petalCount = 35;
+  const petalCount = isMobile ? 12 : 35;
   const petalPos = new Float32Array(petalCount * 3);
   const petalVel = [];
   for (let i = 0; i < petalCount; i++) {
-    petalPos[i * 3] = (Math.random() - 0.5) * 1400;
-    petalPos[i * 3 + 1] = Math.random() * 600;
+    petalPos[i * 3] = (Math.random() - 0.5) * (isMobile ? 600 : 1400);
+    petalPos[i * 3 + 1] = Math.random() * (isMobile ? 400 : 600);
     petalPos[i * 3 + 2] = Math.random() * 600 + 50;
     petalVel.push({
       vx: 0.15 + Math.random() * 0.25,
@@ -651,7 +671,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const petalGeo = new THREE.BufferGeometry();
   petalGeo.setAttribute("position", new THREE.BufferAttribute(petalPos, 3));
   const petalMat = new THREE.PointsMaterial({
-    color: 0xffb6c1, size: 4.5, transparent: true, opacity: 0.65,
+    color: 0xffb6c1, size: isMobile ? 3.5 : 4.5, transparent: true, opacity: 0.65,
     depthWrite: false, sizeAttenuation: true
   });
   scene.add(new THREE.Points(petalGeo, petalMat));
@@ -663,9 +683,9 @@ document.addEventListener("DOMContentLoaded", () => {
       s.wobble += s.ws;
       pos[i * 3] += s.vx + Math.sin(s.wobble) * 0.35;
       pos[i * 3 + 1] += s.vy;
-      if (pos[i * 3] > 750 || pos[i * 3 + 1] < groundY) {
-        pos[i * 3] = -750;
-        pos[i * 3 + 1] = 400 + Math.random() * 200;
+      if (pos[i * 3] > (isMobile ? 400 : 750) || pos[i * 3 + 1] < groundY) {
+        pos[i * 3] = isMobile ? -400 : -750;
+        pos[i * 3 + 1] = (isMobile ? 300 : 400) + Math.random() * 150;
       }
     }
     petalGeo.attributes.position.needsUpdate = true;
@@ -719,13 +739,18 @@ document.addEventListener("DOMContentLoaded", () => {
       console.warn("[3d-bird] Mic scare listener inactive:", e.message);
     }
   };
-  setupMic();
+  // Avoid auto microphone requesting on mobile immediately to keep loading clean
+  if (!isMobile) {
+    setupMic();
+  }
 
   /* ─────────────────────────────────────────────
    * 10. RESIZE HANDLER
    * ───────────────────────────────────────────── */
   window.addEventListener("resize", () => {
+    const isMobileNow = window.innerWidth < 768;
     camera.aspect = window.innerWidth / window.innerHeight;
+    camera.fov = isMobileNow ? 60 : 50;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
   });

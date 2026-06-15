@@ -8,6 +8,11 @@
   if (typeof window === 'undefined') return;
 
   document.addEventListener("DOMContentLoaded", () => {
+    // Avoid running on mobile/touch screens (coarse pointer devices)
+    if (window.matchMedia('(pointer: coarse)').matches) {
+      return;
+    }
+
     // 1. Create and inject SVG cursor element
     const svgNS = "http://www.w3.org/2000/svg";
     const svg = document.createElementNS(svgNS, "svg");
